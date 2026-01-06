@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after {
@@ -632,6 +636,7 @@
       let fileHandle = null;
       let hasFileSystemAccess = 'showOpenFilePicker' in window;
       let deferredPrompt = null;
+      let autoSaveFileTimer = null;
 
       function showToast(msg) {
         if (toastTimer) clearTimeout(toastTimer);
@@ -767,6 +772,37 @@
         autosaveTimer = setTimeout(saveToLocal, 1000);
       }
 
+      function startAutoSaveFile() {
+        if (autoSaveFileTimer) clearInterval(autoSaveFileTimer);
+        if (!fileHandle || !hasFileSystemAccess) return;
+        
+        autoSaveFileTimer = setInterval(async () => {
+          if (fileHandle) {
+            try {
+              const content = editorTextarea.value || '';
+              const writable = await fileHandle.createWritable();
+              await writable.write(content);
+              await writable.close();
+              statusText.textContent = '自動保存完了';
+              statusDot.classList.add('active');
+              setTimeout(() => {
+                statusDot.classList.remove('active');
+                statusText.textContent = '自動保存';
+              }, 1000);
+            } catch (e) {
+              console.error('Auto-save failed:', e);
+            }
+          }
+        }, 30000); // 30秒ごと
+      }
+
+      function stopAutoSaveFile() {
+        if (autoSaveFileTimer) {
+          clearInterval(autoSaveFileTimer);
+          autoSaveFileTimer = null;
+        }
+      }
+
       function restore() {
         try {
           const stored = localStorage.getItem(STORAGE_KEY);
@@ -807,7 +843,8 @@
             scheduleAutosave();
             
             saveBtn.disabled = false;
-            showToast('読み込みました: ' + file.name);
+            startAutoSaveFile();
+            showToast('読み込みました: ' + file.name + ' (30秒ごとに自動保存)');
           } catch (e) {
             if (e.name !== 'AbortError') {
               console.error(e);
@@ -838,7 +875,8 @@
             
             fileHandle = handle;
             saveBtn.disabled = false;
-            showToast('保存しました: ' + handle.name);
+            startAutoSaveFile();
+            showToast('保存しました: ' + handle.name + ' (30秒ごとに自動保存)');
           } catch (e) {
             if (e.name !== 'AbortError') {
               console.error(e);
@@ -902,6 +940,7 @@
         editorTextarea.value = '';
         fileHandle = null;
         saveBtn.disabled = true;
+        stopAutoSaveFile();
         updateCounters();
         try {
           localStorage.removeItem(STORAGE_KEY);
