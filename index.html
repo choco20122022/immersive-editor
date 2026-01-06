@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Immersive Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0b0f" />
+  <meta name="description" content="シンプルで美しいテキストエディタ" />
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkltbWVyc2l2ZSBFZGl0b3IiLAogICJzaG9ydF9uYW1lIjogIkVkaXRvciIsCiAgImRlc2NyaXB0aW9uIjogIuOCt+ODs+ODl+ODq+OBp+e+juOBl+OBhOODhuOCreOCueODiOOCqOODh+OCo+OCvyIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGIwZiIsCiAgInRoZW1lX2NvbG9yIjogIiMwYTBiMGYiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSFpwWlhkQ2IzZzlJakFnTUNBeE9USWdNVGt5SWo0OGNtVmpkQ0IzYVdSMGFEMGlNVGt5SWlCb1pXbG5hSFE5SWpFNU1pSWdabWxzYkQwaUl6QmhNR0l3WmlJdlBqeDBaWGgwSUhnOUlqazJJaUI1UFNJNU5pSWdabWxzYkQwaUl6WXpOalptTVNJZ1ptOXVkQzF6YVhwbFBTSTJNQ0lnWm05dWRDMW1ZVzFwYkhrOUluTmhibk10YzJWeWFXWWlJSFJsZUhRdFlXNWphRzl5UFNJM2FXUmtiR1VpUGps/PC90WlhoMFBqd3ZjM1puUGc9PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNDhjbVZqZENCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlnWm1sc2JEMGlJekJoTUdJd1ppSXZQang0WlhoMElIZzlJakkxTmlJZ2VUMGlNalUySWlCbWFXeHNQU0lqTmpNMk5tWXhJaUJtYjI1MExYTnBlbVU5SWpFd01DSWdabTl1ZEMxbVlXMXBiSGs5SW5OaGJuTXRjMlZ5YVdZaUlIUmxlSFF0WVc1amFHOXlQU0oxYVdSa2JHVWlQamsvTDNSbGVIUStQQzl6ZG1jKw==" ,CiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    :root {
+      --accent: #6366f1;
+      --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.45);
+    }
+
+    body.theme-dark {
+      background: #0a0b0f;
+      color: #d1d5db;
+    }
+    body.theme-light {
+      background: #f8f8f8;
+      color: #111827;
+    }
+
+    .app-root {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .menu-bar {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 999px;
+      padding: 6px 10px;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+    .menu-bar:hover,
+    .menu-bar.expanded {
+      opacity: 1;
+      background: rgba(15, 23, 42, 0.92);
+    }
+    body.theme-light .menu-bar {
+      background: rgba(248, 248, 248, 0.7);
+      border-color: rgba(148, 163, 184, 0.4);
+    }
+    body.theme-light .menu-bar:hover,
+    body.theme-light .menu-bar.expanded {
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .menu-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: #d1d5db;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+      padding: 0;
+    }
+    .menu-icon-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      transform: scale(1.05);
+    }
+    .menu-icon-btn:active {
+      transform: scale(0.95);
+    }
+    body.theme-light .menu-icon-btn {
+      color: #111827;
+    }
+
+    .menu-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(148, 163, 184, 0.4);
+      margin: 0 4px;
+    }
+
+    .menu-select {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+      display: none;
+    }
+    .menu-bar.expanded .menu-select {
+      display: block;
+    }
+    .menu-select:hover {
+      border-color: var(--accent);
+    }
+    body.theme-light .menu-select {
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+    }
+
+    .expanded-panel {
+      position: fixed;
+      top: 70px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 12px;
+      padding: 16px;
+      z-index: 99;
+      min-width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+    .expanded-panel.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    body.theme-light .expanded-panel {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .panel-section {
+      margin-bottom: 16px;
+    }
+    .panel-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(148, 163, 184, 0.9);
+      margin-bottom: 8px;
+    }
+    body.theme-light .panel-label {
+      color: rgba(107, 114, 128, 0.9);
+    }
+
+    .panel-input {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.6);
+      color: #d1d5db;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .panel-input:focus {
+      border-color: var(--accent);
+      box-shadow: var(--focus-ring);
+    }
+    body.theme-light .panel-input {
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+    }
+
+    .panel-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      font-size: 11px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: #d1d5db;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .panel-btn:hover:not(:disabled) {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .panel-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    body.theme-light .panel-btn {
+      background: rgba(249, 250, 251, 0.9);
+      color: #111827;
+    }
+
+    .panel-btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: #4f46e5;
+      color: #fff;
+    }
+    .panel-btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+    }
+
+    .panel-btn-danger {
+      background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+      border-color: #b91c1c;
+      color: #fee2e2;
+    }
+    .panel-btn-danger:hover:not(:disabled) {
+      background: linear-gradient(135deg, #991b1b, #7f1d1d);
+    }
+
+    .editor-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow: hidden;
+    }
+
+    .editor-container {
+      width: 100%;
+      max-width: 800px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-textarea {
+      flex: 1;
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      font-size: 16px;
+      line-height: 2;
+      letter-spacing: 0.03em;
+      color: #d1d5db;
+      padding: 20px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+      transition: writing-mode 0.3s ease;
+    }
+    body.theme-light .editor-textarea {
+      color: #111827;
+      scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+    }
+    .editor-textarea::placeholder {
+      color: rgba(148, 163, 184, 0.5);
+    }
+    
+    .editor-textarea::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .editor-textarea::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .editor-textarea::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: all 0.2s ease;
+    }
+    .editor-textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.5);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    body.theme-light .editor-textarea::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.25);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    
+    .editor-textarea::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    .editor-textarea.vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      overflow-y: hidden;
+      overflow-x: auto;
+      line-height: 2.2;
+      letter-spacing: 0.05em;
+    }
+
+    .footer-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 999px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: rgba(209, 213, 219, 0.8);
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+    .footer-bar:hover {
+      opacity: 1;
+      background: rgba(15, 23, 42, 0.92);
+    }
+    body.theme-light .footer-bar {
+      background: rgba(248, 248, 248, 0.7);
+      color: rgba(17, 24, 39, 0.8);
+    }
+    body.theme-light .footer-bar:hover {
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: rgba(148, 163, 184, 0.4);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #6b7280;
+      transition: all 0.3s;
+    }
+    .status-dot.active {
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
+    }
+
+    .font-serif-1 { font-family: "Noto Serif JP", "Yu Mincho", serif; }
+    .font-serif-2 { font-family: "Yu Mincho", "游明朝", serif; }
+    .font-serif-3 { font-family: "Hiragino Mincho ProN", serif; }
+    .font-serif-4 { font-family: "MS PMincho", serif; }
+    .font-sans-1 { font-family: "Noto Sans JP", "Yu Gothic Medium", sans-serif; }
+    .font-sans-2 { font-family: "Yu Gothic Medium", "游ゴシック Medium", sans-serif; }
+    .font-sans-3 { font-family: "Hiragino Kaku Gothic ProN", sans-serif; }
+    .font-sans-4 { font-family: "Meiryo", sans-serif; }
+
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      color: #d1d5db;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      max-width: 80%;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-5px);
+    }
+    body.theme-light .toast {
+      background: rgba(255, 255, 255, 0.98);
+      color: #111827;
+    }
+
+    .install-prompt {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    .install-prompt.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(-5px);
+    }
+    .install-btn {
+      background: white;
+      color: #4f46e5;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .install-btn:hover {
+      transform: scale(1.05);
+    }
+    .install-close {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .install-close:hover {
+      opacity: 1;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .menu-bar {
+        top: 12px;
+        right: 12px;
+      }
+      .expanded-panel {
+        right: 12px;
+        left: 12px;
+        top: 60px;
+      }
+      .editor-area {
+        padding: 20px 12px 80px;
+      }
+      .editor-textarea {
+        font-size: 15px;
+        padding: 12px;
+      }
+      .footer-bar {
+        bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="app-root">
+    <div class="menu-bar" id="menuBar">
+      <button class="menu-icon-btn" id="themeBtn" title="テーマ切り替え">🌙</button>
+      <div class="menu-divider"></div>
+      <button class="menu-icon-btn" id="writingModeBtn" title="縦書き/横書き切り替え">📝</button>
+      <div class="menu-divider"></div>
+      <button class="menu-icon-btn" id="menuBtn" title="メニュー">⚙️</button>
+      <select id="fontSelect" class="menu-select">
+        <option value="serif-1">明朝 A</option>
+        <option value="serif-2">明朝 B</option>
+        <option value="serif-3">明朝 C</option>
+        <option value="serif-4">明朝 D</option>
+        <option value="sans-1" selected>ゴシック A</option>
+        <option value="sans-2">ゴシック B</option>
+        <option value="sans-3">ゴシック C</option>
+        <option value="sans-4">ゴシック D</option>
+      </select>
+    </div>
+
+    <div class="expanded-panel" id="expandedPanel">
+      <div class="panel-section">
+        <div class="panel-label">ファイル名（任意）</div>
+        <input type="text" id="titleInput" class="panel-input" placeholder="ファイル名として使われます" />
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">フォント</div>
+        <select id="fontSelectPanel" class="panel-input">
+          <option value="serif-1">明朝 A (Noto)</option>
+          <option value="serif-2">明朝 B (游明朝)</option>
+          <option value="serif-3">明朝 C (ヒラギノ)</option>
+          <option value="serif-4">明朝 D (MS)</option>
+          <option value="sans-1" selected>ゴシック A (Noto)</option>
+          <option value="sans-2">ゴシック B (游ゴシック)</option>
+          <option value="sans-3">ゴシック C (ヒラギノ)</option>
+          <option value="sans-4">ゴシック D (メイリオ)</option>
+        </select>
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">ファイル操作</div>
+        <div class="panel-buttons">
+          <button class="panel-btn" id="openBtn">📂 開く</button>
+          <button class="panel-btn panel-btn-primary" id="saveNewBtn">💾 新規保存</button>
+        </div>
+        <div class="panel-buttons" style="margin-top: 8px;">
+          <button class="panel-btn panel-btn-primary" id="saveBtn" disabled>💾 上書き保存</button>
+          <button class="panel-btn panel-btn-danger" id="clearBtn">🧹 クリア</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-area">
+      <div class="editor-container">
+        <textarea
+          id="editorTextarea"
+          class="editor-textarea font-sans-1"
+          placeholder="ここから書き始めてください..."
+          spellcheck="false"
+          autofocus
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <div class="footer-item">
+        <span id="charCount">0</span> 文字
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-item">
+        <span id="lineCount">1</span> 行
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-item">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">自動保存</span>
+      </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".txt" />
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="install-prompt" id="installPrompt">
+    <span>📱 アプリとしてインストール可能です</span>
+    <button class="install-btn" id="installBtn">インストール</button>
+    <button class="install-close" id="installClose">×</button>
+  </div>
+
+  <script>
+    (function() {
+      const body = document.body;
+      const menuBar = document.getElementById('menuBar');
+      const menuBtn = document.getElementById('menuBtn');
+      const themeBtn = document.getElementById('themeBtn');
+      const writingModeBtn = document.getElementById('writingModeBtn');
+      const expandedPanel = document.getElementById('expandedPanel');
+      const fontSelect = document.getElementById('fontSelect');
+      const fontSelectPanel = document.getElementById('fontSelectPanel');
+      const titleInput = document.getElementById('titleInput');
+      const editorTextarea = document.getElementById('editorTextarea');
+      const charCount = document.getElementById('charCount');
+      const lineCount = document.getElementById('lineCount');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const openBtn = document.getElementById('openBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const saveNewBtn = document.getElementById('saveNewBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const fileInput = document.getElementById('fileInput');
+      const toast = document.getElementById('toast');
+      const installPrompt = document.getElementById('installPrompt');
+      const installBtn = document.getElementById('installBtn');
+      const installClose = document.getElementById('installClose');
+
+      const STORAGE_KEY = 'immersive_editor_v3';
+      const THEME_KEY = 'immersive_theme';
+      const FONT_KEY = 'immersive_font';
+      const WRITING_MODE_KEY = 'immersive_writing_mode';
+
+      let autosaveTimer = null;
+      let lastSaved = null;
+      let toastTimer = null;
+      let menuOpen = false;
+      let isVertical = false;
+      let fileHandle = null;
+      let hasFileSystemAccess = 'showOpenFilePicker' in window;
+      let deferredPrompt = null;
+
+      function showToast(msg) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toast.textContent = msg;
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      function applyTheme(theme) {
+        if (theme === 'light') {
+          body.classList.remove('theme-dark');
+          body.classList.add('theme-light');
+          themeBtn.textContent = '☀️';
+        } else {
+          body.classList.remove('theme-light');
+          body.classList.add('theme-dark');
+          themeBtn.textContent = '🌙';
+        }
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch (e) {}
+      }
+
+      function toggleTheme() {
+        const isLight = body.classList.contains('theme-light');
+        applyTheme(isLight ? 'dark' : 'light');
+      }
+
+      themeBtn.addEventListener('click', toggleTheme);
+
+      function applyWritingMode(vertical) {
+        isVertical = vertical;
+        if (vertical) {
+          editorTextarea.classList.add('vertical');
+          writingModeBtn.textContent = '📖';
+          writingModeBtn.title = '横書きに切り替え';
+        } else {
+          editorTextarea.classList.remove('vertical');
+          writingModeBtn.textContent = '📝';
+          writingModeBtn.title = '縦書きに切り替え';
+        }
+        try {
+          localStorage.setItem(WRITING_MODE_KEY, vertical ? 'vertical' : 'horizontal');
+        } catch (e) {}
+      }
+
+      function toggleWritingMode() {
+        applyWritingMode(!isVertical);
+        showToast(isVertical ? '縦書きモード' : '横書きモード');
+      }
+
+      writingModeBtn.addEventListener('click', toggleWritingMode);
+
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuOpen = !menuOpen;
+        if (menuOpen) {
+          expandedPanel.classList.add('show');
+          menuBar.classList.add('expanded');
+        } else {
+          expandedPanel.classList.remove('show');
+          menuBar.classList.remove('expanded');
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (menuOpen && !expandedPanel.contains(e.target) && !menuBar.contains(e.target)) {
+          menuOpen = false;
+          expandedPanel.classList.remove('show');
+          menuBar.classList.remove('expanded');
+        }
+      });
+
+      function applyFont(fontId) {
+        const map = {
+          'serif-1': 'font-serif-1',
+          'serif-2': 'font-serif-2',
+          'serif-3': 'font-serif-3',
+          'serif-4': 'font-serif-4',
+          'sans-1': 'font-sans-1',
+          'sans-2': 'font-sans-2',
+          'sans-3': 'font-sans-3',
+          'sans-4': 'font-sans-4'
+        };
+        Object.values(map).forEach(cls => editorTextarea.classList.remove(cls));
+        editorTextarea.classList.add(map[fontId] || 'font-sans-1');
+        fontSelect.value = fontId;
+        fontSelectPanel.value = fontId;
+        try {
+          localStorage.setItem(FONT_KEY, fontId);
+        } catch (e) {}
+      }
+
+      fontSelect.addEventListener('change', () => applyFont(fontSelect.value));
+      fontSelectPanel.addEventListener('change', () => applyFont(fontSelectPanel.value));
+
+      function updateCounters() {
+        const text = editorTextarea.value || '';
+        charCount.textContent = text.length.toLocaleString();
+        const lines = text ? text.split(/\r\n|\r|\n/).length : 1;
+        lineCount.textContent = lines.toLocaleString();
+      }
+
+      function saveToLocal() {
+        const state = {
+          title: titleInput.value || '',
+          body: editorTextarea.value || '',
+          time: Date.now()
+        };
+        const ser = JSON.stringify(state);
+        if (ser === lastSaved) {
+          statusDot.classList.remove('active');
+          return;
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, ser);
+          lastSaved = ser;
+          statusDot.classList.add('active');
+          statusText.textContent = '保存済み';
+          setTimeout(() => {
+            statusDot.classList.remove('active');
+          }, 1000);
+        } catch (e) {
+          showToast('自動保存に失敗しました');
+        }
+      }
+
+      function scheduleAutosave() {
+        statusDot.classList.add('active');
+        if (autosaveTimer) clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(saveToLocal, 1000);
+      }
+
+      function restore() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) return;
+          const state = JSON.parse(stored);
+          if (state.title) titleInput.value = state.title;
+          if (state.body) editorTextarea.value = state.body;
+          lastSaved = stored;
+          updateCounters();
+        } catch (e) {}
+      }
+
+      function buildFileName() {
+        let name = (titleInput.value || '').trim() || 'untitled';
+        name = name.replace(/[\\\/:*?"<>|]/g, '_');
+        return name + '.txt';
+      }
+
+      async function openFile() {
+        if (hasFileSystemAccess) {
+          try {
+            const [handle] = await window.showOpenFilePicker({
+              types: [{
+                description: 'テキストファイル',
+                accept: { 'text/plain': ['.txt'] }
+              }],
+              multiple: false
+            });
+            
+            fileHandle = handle;
+            const file = await handle.getFile();
+            const text = await file.text();
+            
+            editorTextarea.value = text;
+            const fileName = file.name.replace(/\.txt$/i, '');
+            titleInput.value = fileName;
+            updateCounters();
+            scheduleAutosave();
+            
+            saveBtn.disabled = false;
+            showToast('読み込みました: ' + file.name);
+          } catch (e) {
+            if (e.name !== 'AbortError') {
+              console.error(e);
+              showToast('ファイルを開けませんでした');
+            }
+          }
+        } else {
+          fileInput.click();
+        }
+      }
+
+      async function saveFileAs() {
+        const content = editorTextarea.value || '';
+        
+        if (hasFileSystemAccess) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: buildFileName(),
+              types: [{
+                description: 'テキストファイル',
+                accept: { 'text/plain': ['.txt'] }
+              }]
+            });
+            
+            const writable = await handle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            
+            fileHandle = handle;
+            saveBtn.disabled = false;
+            showToast('保存しました: ' + handle.name);
+          } catch (e) {
+            if (e.name !== 'AbortError') {
+              console.error(e);
+              showToast('保存に失敗しました');
+            }
+          }
+        } else {
+          const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = buildFileName();
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('保存しました: ' + buildFileName());
+        }
+      }
+
+      async function saveFile() {
+        if (!fileHandle) {
+          await saveFileAs();
+          return;
+        }
+        
+        try {
+          const content = editorTextarea.value || '';
+          const writable = await fileHandle.createWritable();
+          await writable.write(content);
+          await writable.close();
+          
+          showToast('上書き保存しました: ' + fileHandle.name);
+        } catch (e) {
+          console.error(e);
+          showToast('上書き保存に失敗しました');
+        }
+      }
+
+      function handleFile(file) {
+        if (!file || !file.name.toLowerCase().endsWith('.txt')) {
+          showToast('txtファイルのみ対応しています');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          editorTextarea.value = e.target.result || '';
+          const fileName = file.name.replace(/\.txt$/i, '');
+          titleInput.value = fileName;
+          updateCounters();
+          scheduleAutosave();
+          showToast('読み込みました: ' + file.name);
+        };
+        reader.onerror = () => showToast('読み込みに失敗しました');
+        reader.readAsText(file, 'utf-8');
+      }
+
+      function clearAll() {
+        if (editorTextarea.value.trim() || titleInput.value.trim()) {
+          if (!confirm('すべてクリアしますか?')) return;
+        }
+        titleInput.value = '';
+        editorTextarea.value = '';
+        fileHandle = null;
+        saveBtn.disabled = true;
+        updateCounters();
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          lastSaved = null;
+        } catch (e) {}
+        showToast('クリアしました');
+      }
+
+      titleInput.addEventListener('input', scheduleAutosave);
+      editorTextarea.addEventListener('input', () => {
+        updateCounters();
+        scheduleAutosave();
+      });
+
+      openBtn.addEventListener('click', openFile);
+      saveBtn.addEventListener('click', saveFile);
+      saveNewBtn.addEventListener('click', saveFileAs);
+      clearBtn.addEventListener('click', clearAll);
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleFile(e.target.files[0]);
+        fileInput.value = '';
+      });
+
+      window.addEventListener('keydown', async (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          if (fileHandle && hasFileSystemAccess) {
+            await saveFile();
+          } else {
+            await saveFileAs();
+          }
+        }
+      });
+
+      editorTextarea.addEventListener('wheel', (e) => {
+        if (isVertical) {
+          e.preventDefault();
+          editorTextarea.scrollLeft -= e.deltaY;
+        }
+      }, { passive: false });
+
+      (function init() {
+        // PWAインストールプロンプト
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          setTimeout(() => {
+            installPrompt.classList.add('show');
+          }, 3000);
+        });
+
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            showToast('インストールありがとうございます！');
+          }
+          deferredPrompt = null;
+          installPrompt.classList.remove('show');
+        });
+
+        installClose.addEventListener('click', () => {
+          installPrompt.classList.remove('show');
+        });
+
+        window.addEventListener('appinstalled', () => {
+          showToast('アプリがインストールされました！');
+          installPrompt.classList.remove('show');
+        });
+
+        // Service Worker登録
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZXZlbnQpIHsKICBzZWxmLnNraXBXYWl0aW5nKCk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdhY3RpdmF0ZScsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgcmV0dXJuIHNlbGYuY2xpZW50cy5jbGFpbSgpOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignZmV0Y2gnLCBmdW5jdGlvbihldmVudCkgewogIGV2ZW50LnJlc3BvbmRXaXRoKGZldGNoKGV2ZW50LnJlcXVlc3QpKTsKfSk7')
+            .catch(err => console.log('SW registration failed:', err));
+        }
+
+        try {
+          const theme = localStorage.getItem(THEME_KEY) || 'dark';
+          applyTheme(theme);
+          const font = localStorage.getItem(FONT_KEY) || 'sans-1';
+          applyFont(font);
+          const writingMode = localStorage.getItem(WRITING_MODE_KEY) || 'horizontal';
+          applyWritingMode(writingMode === 'vertical');
+        } catch (e) {}
+        restore();
+        updateCounters();
+        editorTextarea.focus();
+        
+        if (!hasFileSystemAccess) {
+          showToast('このブラウザでは従来の保存方式を使用します');
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>
